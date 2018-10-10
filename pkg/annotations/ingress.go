@@ -52,8 +52,8 @@ const (
 	// only processes Ingresses with this annotation either unset, or set
 	// to either gceIngessClass or the empty string.
 	IngressClassKey      = "kubernetes.io/ingress.class"
-	GceIngressClass      = "gce"
-	GceMultiIngressClass = "gce-multi-cluster"
+	GceIngressClass      = "gce-wpg"
+	GceMultiIngressClass = "gce-multi-cluster-wpg"
 
 	// Label key to denote which GCE zone a Kubernetes node is in.
 	ZoneKey     = "failure-domain.beta.kubernetes.io/zone"

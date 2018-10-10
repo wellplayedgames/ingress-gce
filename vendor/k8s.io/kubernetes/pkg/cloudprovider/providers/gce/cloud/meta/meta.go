@@ -156,6 +156,41 @@ var AllServices = []*ServiceInfo{
 		},
 	},
 	{
+		Object:      "BackendBucket",
+		Service:     "BackendBuckets",
+		Resource:    "backendBuckets",
+		keyType:     Global,
+		serviceType: reflect.TypeOf(&ga.BackendBucketsService{}),
+		additionalMethods: []string{
+			"Patch",
+			"Update",
+		},
+	},
+	{
+		Object:      "BackendBucket",
+		Service:     "BackendBuckets",
+		Resource:    "backendBuckets",
+		version:     VersionBeta,
+		keyType:     Global,
+		serviceType: reflect.TypeOf(&beta.BackendBucketsService{}),
+		additionalMethods: []string{
+			"Patch",
+			"Update",
+		},
+	},
+	{
+		Object:      "BackendBucket",
+		Service:     "BackendBuckets",
+		Resource:    "backendBuckets",
+		version:     VersionAlpha,
+		keyType:     Global,
+		serviceType: reflect.TypeOf(&alpha.BackendBucketsService{}),
+		additionalMethods: []string{
+			"Patch",
+			"Update",
+		},
+	},
+	{
 		Object:      "Disk",
 		Service:     "Disks",
 		Resource:    "disks",

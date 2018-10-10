@@ -47,6 +47,9 @@ type Cloud interface {
 	AlphaBackendServices() AlphaBackendServices
 	RegionBackendServices() RegionBackendServices
 	AlphaRegionBackendServices() AlphaRegionBackendServices
+	BackendBuckets() BackendBuckets
+	BetaBackendBuckets() BetaBackendBuckets
+	AlphaBackendBuckets() AlphaBackendBuckets
 	Disks() Disks
 	BetaRegionDisks() BetaRegionDisks
 	Firewalls() Firewalls
@@ -88,6 +91,9 @@ func NewGCE(s *Service) *GCE {
 		gceAlphaBackendServices:       &GCEAlphaBackendServices{s},
 		gceRegionBackendServices:      &GCERegionBackendServices{s},
 		gceAlphaRegionBackendServices: &GCEAlphaRegionBackendServices{s},
+		gceBackendBuckets:             &GCEBackendBuckets{s},
+		gceBetaBackendBuckets:         &GCEBetaBackendBuckets{s},
+		gceAlphaBackendBuckets:        &GCEAlphaBackendBuckets{s},
 		gceDisks:                      &GCEDisks{s},
 		gceBetaRegionDisks:            &GCEBetaRegionDisks{s},
 		gceFirewalls:                  &GCEFirewalls{s},
@@ -133,6 +139,9 @@ type GCE struct {
 	gceAlphaBackendServices       *GCEAlphaBackendServices
 	gceRegionBackendServices      *GCERegionBackendServices
 	gceAlphaRegionBackendServices *GCEAlphaRegionBackendServices
+	gceBackendBuckets             *GCEBackendBuckets
+	gceBetaBackendBuckets         *GCEBetaBackendBuckets
+	gceAlphaBackendBuckets        *GCEAlphaBackendBuckets
 	gceDisks                      *GCEDisks
 	gceBetaRegionDisks            *GCEBetaRegionDisks
 	gceFirewalls                  *GCEFirewalls
@@ -205,6 +214,21 @@ func (gce *GCE) RegionBackendServices() RegionBackendServices {
 // AlphaRegionBackendServices returns the interface for the alpha RegionBackendServices.
 func (gce *GCE) AlphaRegionBackendServices() AlphaRegionBackendServices {
 	return gce.gceAlphaRegionBackendServices
+}
+
+// BackendBuckets returns the interface for the ga BackendBuckets.
+func (gce *GCE) BackendBuckets() BackendBuckets {
+	return gce.gceBackendBuckets
+}
+
+// BetaBackendBuckets returns the interface for the beta BackendBuckets.
+func (gce *GCE) BetaBackendBuckets() BetaBackendBuckets {
+	return gce.gceBetaBackendBuckets
+}
+
+// AlphaBackendBuckets returns the interface for the alpha BackendBuckets.
+func (gce *GCE) AlphaBackendBuckets() AlphaBackendBuckets {
+	return gce.gceAlphaBackendBuckets
 }
 
 // Disks returns the interface for the ga Disks.
@@ -345,6 +369,7 @@ func (gce *GCE) Zones() Zones {
 // NewMockGCE returns a new mock for GCE.
 func NewMockGCE(projectRouter ProjectRouter) *MockGCE {
 	mockAddressesObjs := map[meta.Key]*MockAddressesObj{}
+	mockBackendBucketsObjs := map[meta.Key]*MockBackendBucketsObj{}
 	mockBackendServicesObjs := map[meta.Key]*MockBackendServicesObj{}
 	mockDisksObjs := map[meta.Key]*MockDisksObj{}
 	mockFirewallsObjs := map[meta.Key]*MockFirewallsObj{}
@@ -380,6 +405,9 @@ func NewMockGCE(projectRouter ProjectRouter) *MockGCE {
 		MockAlphaBackendServices:       NewMockAlphaBackendServices(projectRouter, mockBackendServicesObjs),
 		MockRegionBackendServices:      NewMockRegionBackendServices(projectRouter, mockRegionBackendServicesObjs),
 		MockAlphaRegionBackendServices: NewMockAlphaRegionBackendServices(projectRouter, mockRegionBackendServicesObjs),
+		MockBackendBuckets:             NewMockBackendBuckets(projectRouter, mockBackendBucketsObjs),
+		MockBetaBackendBuckets:         NewMockBetaBackendBuckets(projectRouter, mockBackendBucketsObjs),
+		MockAlphaBackendBuckets:        NewMockAlphaBackendBuckets(projectRouter, mockBackendBucketsObjs),
 		MockDisks:                      NewMockDisks(projectRouter, mockDisksObjs),
 		MockBetaRegionDisks:            NewMockBetaRegionDisks(projectRouter, mockRegionDisksObjs),
 		MockFirewalls:                  NewMockFirewalls(projectRouter, mockFirewallsObjs),
@@ -425,6 +453,9 @@ type MockGCE struct {
 	MockAlphaBackendServices       *MockAlphaBackendServices
 	MockRegionBackendServices      *MockRegionBackendServices
 	MockAlphaRegionBackendServices *MockAlphaRegionBackendServices
+	MockBackendBuckets             *MockBackendBuckets
+	MockBetaBackendBuckets         *MockBetaBackendBuckets
+	MockAlphaBackendBuckets        *MockAlphaBackendBuckets
 	MockDisks                      *MockDisks
 	MockBetaRegionDisks            *MockBetaRegionDisks
 	MockFirewalls                  *MockFirewalls
@@ -497,6 +528,21 @@ func (mock *MockGCE) RegionBackendServices() RegionBackendServices {
 // AlphaRegionBackendServices returns the interface for the alpha RegionBackendServices.
 func (mock *MockGCE) AlphaRegionBackendServices() AlphaRegionBackendServices {
 	return mock.MockAlphaRegionBackendServices
+}
+
+// BackendBuckets returns the interface for the ga BackendBuckets.
+func (mock *MockGCE) BackendBuckets() BackendBuckets {
+	return mock.MockBackendBuckets
+}
+
+// BetaBackendBuckets returns the interface for the beta BackendBuckets.
+func (mock *MockGCE) BetaBackendBuckets() BetaBackendBuckets {
+	return mock.MockBetaBackendBuckets
+}
+
+// AlphaBackendBuckets returns the interface for the alpha BackendBuckets.
+func (mock *MockGCE) AlphaBackendBuckets() AlphaBackendBuckets {
+	return mock.MockAlphaBackendBuckets
 }
 
 // Disks returns the interface for the ga Disks.
@@ -676,6 +722,52 @@ func (m *MockAddressesObj) ToGA() *ga.Address {
 	ret := &ga.Address{}
 	if err := copyViaJSON(ret, m.Obj); err != nil {
 		glog.Errorf("Could not convert %T to *ga.Address via JSON: %v", m.Obj, err)
+	}
+	return ret
+}
+
+// MockBackendBucketsObj is used to store the various object versions in the shared
+// map of mocked objects. This allows for multiple API versions to co-exist and
+// share the same "view" of the objects in the backend.
+type MockBackendBucketsObj struct {
+	Obj interface{}
+}
+
+// ToAlpha retrieves the given version of the object.
+func (m *MockBackendBucketsObj) ToAlpha() *alpha.BackendBucket {
+	if ret, ok := m.Obj.(*alpha.BackendBucket); ok {
+		return ret
+	}
+	// Convert the object via JSON copying to the type that was requested.
+	ret := &alpha.BackendBucket{}
+	if err := copyViaJSON(ret, m.Obj); err != nil {
+		glog.Errorf("Could not convert %T to *alpha.BackendBucket via JSON: %v", m.Obj, err)
+	}
+	return ret
+}
+
+// ToBeta retrieves the given version of the object.
+func (m *MockBackendBucketsObj) ToBeta() *beta.BackendBucket {
+	if ret, ok := m.Obj.(*beta.BackendBucket); ok {
+		return ret
+	}
+	// Convert the object via JSON copying to the type that was requested.
+	ret := &beta.BackendBucket{}
+	if err := copyViaJSON(ret, m.Obj); err != nil {
+		glog.Errorf("Could not convert %T to *beta.BackendBucket via JSON: %v", m.Obj, err)
+	}
+	return ret
+}
+
+// ToGA retrieves the given version of the object.
+func (m *MockBackendBucketsObj) ToGA() *ga.BackendBucket {
+	if ret, ok := m.Obj.(*ga.BackendBucket); ok {
+		return ret
+	}
+	// Convert the object via JSON copying to the type that was requested.
+	ret := &ga.BackendBucket{}
+	if err := copyViaJSON(ret, m.Obj); err != nil {
+		glog.Errorf("Could not convert %T to *ga.BackendBucket via JSON: %v", m.Obj, err)
 	}
 	return ret
 }
@@ -4730,6 +4822,1260 @@ func (g *GCEAlphaRegionBackendServices) Update(ctx context.Context, key *meta.Ke
 	}
 	err = g.s.WaitForCompletion(ctx, op)
 	glog.V(4).Infof("GCEAlphaRegionBackendServices.Update(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// BackendBuckets is an interface that allows for mocking of BackendBuckets.
+type BackendBuckets interface {
+	Get(ctx context.Context, key *meta.Key) (*ga.BackendBucket, error)
+	List(ctx context.Context, fl *filter.F) ([]*ga.BackendBucket, error)
+	Insert(ctx context.Context, key *meta.Key, obj *ga.BackendBucket) error
+	Delete(ctx context.Context, key *meta.Key) error
+	Patch(context.Context, *meta.Key, *ga.BackendBucket) error
+	Update(context.Context, *meta.Key, *ga.BackendBucket) error
+}
+
+// NewMockBackendBuckets returns a new mock for BackendBuckets.
+func NewMockBackendBuckets(pr ProjectRouter, objs map[meta.Key]*MockBackendBucketsObj) *MockBackendBuckets {
+	mock := &MockBackendBuckets{
+		ProjectRouter: pr,
+
+		Objects:     objs,
+		GetError:    map[meta.Key]error{},
+		InsertError: map[meta.Key]error{},
+		DeleteError: map[meta.Key]error{},
+	}
+	return mock
+}
+
+// MockBackendBuckets is the mock for BackendBuckets.
+type MockBackendBuckets struct {
+	Lock sync.Mutex
+
+	ProjectRouter ProjectRouter
+
+	// Objects maintained by the mock.
+	Objects map[meta.Key]*MockBackendBucketsObj
+
+	// If an entry exists for the given key and operation, then the error
+	// will be returned instead of the operation.
+	GetError    map[meta.Key]error
+	ListError   *error
+	InsertError map[meta.Key]error
+	DeleteError map[meta.Key]error
+
+	// xxxHook allow you to intercept the standard processing of the mock in
+	// order to add your own logic. Return (true, _, _) to prevent the normal
+	// execution flow of the mock. Return (false, nil, nil) to continue with
+	// normal mock behavior/ after the hook function executes.
+	GetHook    func(ctx context.Context, key *meta.Key, m *MockBackendBuckets) (bool, *ga.BackendBucket, error)
+	ListHook   func(ctx context.Context, fl *filter.F, m *MockBackendBuckets) (bool, []*ga.BackendBucket, error)
+	InsertHook func(ctx context.Context, key *meta.Key, obj *ga.BackendBucket, m *MockBackendBuckets) (bool, error)
+	DeleteHook func(ctx context.Context, key *meta.Key, m *MockBackendBuckets) (bool, error)
+	PatchHook  func(context.Context, *meta.Key, *ga.BackendBucket, *MockBackendBuckets) error
+	UpdateHook func(context.Context, *meta.Key, *ga.BackendBucket, *MockBackendBuckets) error
+
+	// X is extra state that can be used as part of the mock. Generated code
+	// will not use this field.
+	X interface{}
+}
+
+// Get returns the object from the mock.
+func (m *MockBackendBuckets) Get(ctx context.Context, key *meta.Key) (*ga.BackendBucket, error) {
+	if m.GetHook != nil {
+		if intercept, obj, err := m.GetHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockBackendBuckets.Get(%v, %s) = %+v, %v", ctx, key, obj, err)
+			return obj, err
+		}
+	}
+	if !key.Valid() {
+		return nil, fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.GetError[*key]; ok {
+		glog.V(5).Infof("MockBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+		return nil, err
+	}
+	if obj, ok := m.Objects[*key]; ok {
+		typedObj := obj.ToGA()
+		glog.V(5).Infof("MockBackendBuckets.Get(%v, %s) = %+v, nil", ctx, key, typedObj)
+		return typedObj, nil
+	}
+
+	err := &googleapi.Error{
+		Code:    http.StatusNotFound,
+		Message: fmt.Sprintf("MockBackendBuckets %v not found", key),
+	}
+	glog.V(5).Infof("MockBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+	return nil, err
+}
+
+// List all of the objects in the mock.
+func (m *MockBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*ga.BackendBucket, error) {
+	if m.ListHook != nil {
+		if intercept, objs, err := m.ListHook(ctx, fl, m); intercept {
+			glog.V(5).Infof("MockBackendBuckets.List(%v, %v) = [%v items], %v", ctx, fl, len(objs), err)
+			return objs, err
+		}
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if m.ListError != nil {
+		err := *m.ListError
+		glog.V(5).Infof("MockBackendBuckets.List(%v, %v) = nil, %v", ctx, fl, err)
+
+		return nil, *m.ListError
+	}
+
+	var objs []*ga.BackendBucket
+	for _, obj := range m.Objects {
+		if !fl.Match(obj.ToGA()) {
+			continue
+		}
+		objs = append(objs, obj.ToGA())
+	}
+
+	glog.V(5).Infof("MockBackendBuckets.List(%v, %v) = [%v items], nil", ctx, fl, len(objs))
+	return objs, nil
+}
+
+// Insert is a mock for inserting/creating a new object.
+func (m *MockBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *ga.BackendBucket) error {
+	if m.InsertHook != nil {
+		if intercept, err := m.InsertHook(ctx, key, obj, m); intercept {
+			glog.V(5).Infof("MockBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.InsertError[*key]; ok {
+		glog.V(5).Infof("MockBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; ok {
+		err := &googleapi.Error{
+			Code:    http.StatusConflict,
+			Message: fmt.Sprintf("MockBackendBuckets %v exists", key),
+		}
+		glog.V(5).Infof("MockBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+
+	obj.Name = key.Name
+	projectID := m.ProjectRouter.ProjectID(ctx, "ga", "backendBuckets")
+	obj.SelfLink = SelfLink(meta.VersionGA, projectID, "backendBuckets", key)
+
+	m.Objects[*key] = &MockBackendBucketsObj{obj}
+	glog.V(5).Infof("MockBackendBuckets.Insert(%v, %v, %+v) = nil", ctx, key, obj)
+	return nil
+}
+
+// Delete is a mock for deleting the object.
+func (m *MockBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	if m.DeleteHook != nil {
+		if intercept, err := m.DeleteHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.DeleteError[*key]; ok {
+		glog.V(5).Infof("MockBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; !ok {
+		err := &googleapi.Error{
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("MockBackendBuckets %v not found", key),
+		}
+		glog.V(5).Infof("MockBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	delete(m.Objects, *key)
+	glog.V(5).Infof("MockBackendBuckets.Delete(%v, %v) = nil", ctx, key)
+	return nil
+}
+
+// Obj wraps the object for use in the mock.
+func (m *MockBackendBuckets) Obj(o *ga.BackendBucket) *MockBackendBucketsObj {
+	return &MockBackendBucketsObj{o}
+}
+
+// Patch is a mock for the corresponding method.
+func (m *MockBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *ga.BackendBucket) error {
+	if m.PatchHook != nil {
+		return m.PatchHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// Update is a mock for the corresponding method.
+func (m *MockBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *ga.BackendBucket) error {
+	if m.UpdateHook != nil {
+		return m.UpdateHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// GCEBackendBuckets is a simplifying adapter for the GCE BackendBuckets.
+type GCEBackendBuckets struct {
+	s *Service
+}
+
+// Get the BackendBucket named by key.
+func (g *GCEBackendBuckets) Get(ctx context.Context, key *meta.Key) (*ga.BackendBucket, error) {
+	glog.V(5).Infof("GCEBackendBuckets.Get(%v, %v): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBackendBuckets.Get(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return nil, fmt.Errorf("invalid GCE key (%#v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Get",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBackendBuckets.Get(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Get(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return nil, err
+	}
+	call := g.s.GA.BackendBuckets.Get(projectID, key.Name)
+	call.Context(ctx)
+	v, err := call.Do()
+	glog.V(4).Infof("GCEBackendBuckets.Get(%v, %v) = %+v, %v", ctx, key, v, err)
+	return v, err
+}
+
+// List all BackendBucket objects.
+func (g *GCEBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*ga.BackendBucket, error) {
+	glog.V(5).Infof("GCEBackendBuckets.List(%v, %v) called", ctx, fl)
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "List",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		return nil, err
+	}
+	glog.V(5).Infof("GCEBackendBuckets.List(%v, %v): projectID = %v, rk = %+v", ctx, fl, projectID, rk)
+	call := g.s.GA.BackendBuckets.List(projectID)
+	if fl != filter.None {
+		call.Filter(fl.String())
+	}
+	var all []*ga.BackendBucket
+	f := func(l *ga.BackendBucketList) error {
+		glog.V(5).Infof("GCEBackendBuckets.List(%v, ..., %v): page %+v", ctx, fl, l)
+		all = append(all, l.Items...)
+		return nil
+	}
+	if err := call.Pages(ctx, f); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, nil, err)
+		return nil, err
+	}
+
+	if glog.V(4) {
+		glog.V(4).Infof("GCEBackendBuckets.List(%v, ..., %v) = [%v items], %v", ctx, fl, len(all), nil)
+	} else if glog.V(5) {
+		var asStr []string
+		for _, o := range all {
+			asStr = append(asStr, fmt.Sprintf("%+v", o))
+		}
+		glog.V(5).Infof("GCEBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, asStr, nil)
+	}
+
+	return all, nil
+}
+
+// Insert BackendBucket with key of value obj.
+func (g *GCEBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *ga.BackendBucket) error {
+	glog.V(5).Infof("GCEBackendBuckets.Insert(%v, %v, %+v): called", ctx, key, obj)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBackendBuckets.Insert(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Insert",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBackendBuckets.Insert(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Insert(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	obj.Name = key.Name
+	call := g.s.GA.BackendBuckets.Insert(projectID, obj)
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Insert(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBackendBuckets.Insert(%v, %v, %+v) = %+v", ctx, key, obj, err)
+	return err
+}
+
+// Delete the BackendBucket referenced by key.
+func (g *GCEBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	glog.V(5).Infof("GCEBackendBuckets.Delete(%v, %v): called", ctx, key)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBackendBuckets.Delete(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Delete",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBackendBuckets.Delete(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Delete(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.GA.BackendBuckets.Delete(projectID, key.Name)
+
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+	return err
+}
+
+// Patch is a method on GCEBackendBuckets.
+func (g *GCEBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *ga.BackendBucket) error {
+	glog.V(5).Infof("GCEBackendBuckets.Patch(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBackendBuckets.Patch(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Patch",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBackendBuckets.Patch(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Patch(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.GA.BackendBuckets.Patch(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// Update is a method on GCEBackendBuckets.
+func (g *GCEBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *ga.BackendBucket) error {
+	glog.V(5).Infof("GCEBackendBuckets.Update(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBackendBuckets.Update(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "ga", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Update",
+		Version:   meta.Version("ga"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBackendBuckets.Update(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Update(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.GA.BackendBuckets.Update(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// BetaBackendBuckets is an interface that allows for mocking of BackendBuckets.
+type BetaBackendBuckets interface {
+	Get(ctx context.Context, key *meta.Key) (*beta.BackendBucket, error)
+	List(ctx context.Context, fl *filter.F) ([]*beta.BackendBucket, error)
+	Insert(ctx context.Context, key *meta.Key, obj *beta.BackendBucket) error
+	Delete(ctx context.Context, key *meta.Key) error
+	Patch(context.Context, *meta.Key, *beta.BackendBucket) error
+	Update(context.Context, *meta.Key, *beta.BackendBucket) error
+}
+
+// NewMockBetaBackendBuckets returns a new mock for BackendBuckets.
+func NewMockBetaBackendBuckets(pr ProjectRouter, objs map[meta.Key]*MockBackendBucketsObj) *MockBetaBackendBuckets {
+	mock := &MockBetaBackendBuckets{
+		ProjectRouter: pr,
+
+		Objects:     objs,
+		GetError:    map[meta.Key]error{},
+		InsertError: map[meta.Key]error{},
+		DeleteError: map[meta.Key]error{},
+	}
+	return mock
+}
+
+// MockBetaBackendBuckets is the mock for BackendBuckets.
+type MockBetaBackendBuckets struct {
+	Lock sync.Mutex
+
+	ProjectRouter ProjectRouter
+
+	// Objects maintained by the mock.
+	Objects map[meta.Key]*MockBackendBucketsObj
+
+	// If an entry exists for the given key and operation, then the error
+	// will be returned instead of the operation.
+	GetError    map[meta.Key]error
+	ListError   *error
+	InsertError map[meta.Key]error
+	DeleteError map[meta.Key]error
+
+	// xxxHook allow you to intercept the standard processing of the mock in
+	// order to add your own logic. Return (true, _, _) to prevent the normal
+	// execution flow of the mock. Return (false, nil, nil) to continue with
+	// normal mock behavior/ after the hook function executes.
+	GetHook    func(ctx context.Context, key *meta.Key, m *MockBetaBackendBuckets) (bool, *beta.BackendBucket, error)
+	ListHook   func(ctx context.Context, fl *filter.F, m *MockBetaBackendBuckets) (bool, []*beta.BackendBucket, error)
+	InsertHook func(ctx context.Context, key *meta.Key, obj *beta.BackendBucket, m *MockBetaBackendBuckets) (bool, error)
+	DeleteHook func(ctx context.Context, key *meta.Key, m *MockBetaBackendBuckets) (bool, error)
+	PatchHook  func(context.Context, *meta.Key, *beta.BackendBucket, *MockBetaBackendBuckets) error
+	UpdateHook func(context.Context, *meta.Key, *beta.BackendBucket, *MockBetaBackendBuckets) error
+
+	// X is extra state that can be used as part of the mock. Generated code
+	// will not use this field.
+	X interface{}
+}
+
+// Get returns the object from the mock.
+func (m *MockBetaBackendBuckets) Get(ctx context.Context, key *meta.Key) (*beta.BackendBucket, error) {
+	if m.GetHook != nil {
+		if intercept, obj, err := m.GetHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockBetaBackendBuckets.Get(%v, %s) = %+v, %v", ctx, key, obj, err)
+			return obj, err
+		}
+	}
+	if !key.Valid() {
+		return nil, fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.GetError[*key]; ok {
+		glog.V(5).Infof("MockBetaBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+		return nil, err
+	}
+	if obj, ok := m.Objects[*key]; ok {
+		typedObj := obj.ToBeta()
+		glog.V(5).Infof("MockBetaBackendBuckets.Get(%v, %s) = %+v, nil", ctx, key, typedObj)
+		return typedObj, nil
+	}
+
+	err := &googleapi.Error{
+		Code:    http.StatusNotFound,
+		Message: fmt.Sprintf("MockBetaBackendBuckets %v not found", key),
+	}
+	glog.V(5).Infof("MockBetaBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+	return nil, err
+}
+
+// List all of the objects in the mock.
+func (m *MockBetaBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*beta.BackendBucket, error) {
+	if m.ListHook != nil {
+		if intercept, objs, err := m.ListHook(ctx, fl, m); intercept {
+			glog.V(5).Infof("MockBetaBackendBuckets.List(%v, %v) = [%v items], %v", ctx, fl, len(objs), err)
+			return objs, err
+		}
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if m.ListError != nil {
+		err := *m.ListError
+		glog.V(5).Infof("MockBetaBackendBuckets.List(%v, %v) = nil, %v", ctx, fl, err)
+
+		return nil, *m.ListError
+	}
+
+	var objs []*beta.BackendBucket
+	for _, obj := range m.Objects {
+		if !fl.Match(obj.ToBeta()) {
+			continue
+		}
+		objs = append(objs, obj.ToBeta())
+	}
+
+	glog.V(5).Infof("MockBetaBackendBuckets.List(%v, %v) = [%v items], nil", ctx, fl, len(objs))
+	return objs, nil
+}
+
+// Insert is a mock for inserting/creating a new object.
+func (m *MockBetaBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *beta.BackendBucket) error {
+	if m.InsertHook != nil {
+		if intercept, err := m.InsertHook(ctx, key, obj, m); intercept {
+			glog.V(5).Infof("MockBetaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.InsertError[*key]; ok {
+		glog.V(5).Infof("MockBetaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; ok {
+		err := &googleapi.Error{
+			Code:    http.StatusConflict,
+			Message: fmt.Sprintf("MockBetaBackendBuckets %v exists", key),
+		}
+		glog.V(5).Infof("MockBetaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+
+	obj.Name = key.Name
+	projectID := m.ProjectRouter.ProjectID(ctx, "beta", "backendBuckets")
+	obj.SelfLink = SelfLink(meta.VersionBeta, projectID, "backendBuckets", key)
+
+	m.Objects[*key] = &MockBackendBucketsObj{obj}
+	glog.V(5).Infof("MockBetaBackendBuckets.Insert(%v, %v, %+v) = nil", ctx, key, obj)
+	return nil
+}
+
+// Delete is a mock for deleting the object.
+func (m *MockBetaBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	if m.DeleteHook != nil {
+		if intercept, err := m.DeleteHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockBetaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.DeleteError[*key]; ok {
+		glog.V(5).Infof("MockBetaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; !ok {
+		err := &googleapi.Error{
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("MockBetaBackendBuckets %v not found", key),
+		}
+		glog.V(5).Infof("MockBetaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	delete(m.Objects, *key)
+	glog.V(5).Infof("MockBetaBackendBuckets.Delete(%v, %v) = nil", ctx, key)
+	return nil
+}
+
+// Obj wraps the object for use in the mock.
+func (m *MockBetaBackendBuckets) Obj(o *beta.BackendBucket) *MockBackendBucketsObj {
+	return &MockBackendBucketsObj{o}
+}
+
+// Patch is a mock for the corresponding method.
+func (m *MockBetaBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *beta.BackendBucket) error {
+	if m.PatchHook != nil {
+		return m.PatchHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// Update is a mock for the corresponding method.
+func (m *MockBetaBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *beta.BackendBucket) error {
+	if m.UpdateHook != nil {
+		return m.UpdateHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// GCEBetaBackendBuckets is a simplifying adapter for the GCE BackendBuckets.
+type GCEBetaBackendBuckets struct {
+	s *Service
+}
+
+// Get the BackendBucket named by key.
+func (g *GCEBetaBackendBuckets) Get(ctx context.Context, key *meta.Key) (*beta.BackendBucket, error) {
+	glog.V(5).Infof("GCEBetaBackendBuckets.Get(%v, %v): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBetaBackendBuckets.Get(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return nil, fmt.Errorf("invalid GCE key (%#v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Get",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.Get(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Get(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return nil, err
+	}
+	call := g.s.Beta.BackendBuckets.Get(projectID, key.Name)
+	call.Context(ctx)
+	v, err := call.Do()
+	glog.V(4).Infof("GCEBetaBackendBuckets.Get(%v, %v) = %+v, %v", ctx, key, v, err)
+	return v, err
+}
+
+// List all BackendBucket objects.
+func (g *GCEBetaBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*beta.BackendBucket, error) {
+	glog.V(5).Infof("GCEBetaBackendBuckets.List(%v, %v) called", ctx, fl)
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "List",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		return nil, err
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.List(%v, %v): projectID = %v, rk = %+v", ctx, fl, projectID, rk)
+	call := g.s.Beta.BackendBuckets.List(projectID)
+	if fl != filter.None {
+		call.Filter(fl.String())
+	}
+	var all []*beta.BackendBucket
+	f := func(l *beta.BackendBucketList) error {
+		glog.V(5).Infof("GCEBetaBackendBuckets.List(%v, ..., %v): page %+v", ctx, fl, l)
+		all = append(all, l.Items...)
+		return nil
+	}
+	if err := call.Pages(ctx, f); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, nil, err)
+		return nil, err
+	}
+
+	if glog.V(4) {
+		glog.V(4).Infof("GCEBetaBackendBuckets.List(%v, ..., %v) = [%v items], %v", ctx, fl, len(all), nil)
+	} else if glog.V(5) {
+		var asStr []string
+		for _, o := range all {
+			asStr = append(asStr, fmt.Sprintf("%+v", o))
+		}
+		glog.V(5).Infof("GCEBetaBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, asStr, nil)
+	}
+
+	return all, nil
+}
+
+// Insert BackendBucket with key of value obj.
+func (g *GCEBetaBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *beta.BackendBucket) error {
+	glog.V(5).Infof("GCEBetaBackendBuckets.Insert(%v, %v, %+v): called", ctx, key, obj)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBetaBackendBuckets.Insert(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Insert",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.Insert(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Insert(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	obj.Name = key.Name
+	call := g.s.Beta.BackendBuckets.Insert(projectID, obj)
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Insert(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBetaBackendBuckets.Insert(%v, %v, %+v) = %+v", ctx, key, obj, err)
+	return err
+}
+
+// Delete the BackendBucket referenced by key.
+func (g *GCEBetaBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	glog.V(5).Infof("GCEBetaBackendBuckets.Delete(%v, %v): called", ctx, key)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBetaBackendBuckets.Delete(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Delete",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.Delete(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Delete(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Beta.BackendBuckets.Delete(projectID, key.Name)
+
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBetaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+	return err
+}
+
+// Patch is a method on GCEBetaBackendBuckets.
+func (g *GCEBetaBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *beta.BackendBucket) error {
+	glog.V(5).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Patch",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Beta.BackendBuckets.Patch(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBetaBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// Update is a method on GCEBetaBackendBuckets.
+func (g *GCEBetaBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *beta.BackendBucket) error {
+	glog.V(5).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "beta", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Update",
+		Version:   meta.Version("beta"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Beta.BackendBuckets.Update(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEBetaBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// AlphaBackendBuckets is an interface that allows for mocking of BackendBuckets.
+type AlphaBackendBuckets interface {
+	Get(ctx context.Context, key *meta.Key) (*alpha.BackendBucket, error)
+	List(ctx context.Context, fl *filter.F) ([]*alpha.BackendBucket, error)
+	Insert(ctx context.Context, key *meta.Key, obj *alpha.BackendBucket) error
+	Delete(ctx context.Context, key *meta.Key) error
+	Patch(context.Context, *meta.Key, *alpha.BackendBucket) error
+	Update(context.Context, *meta.Key, *alpha.BackendBucket) error
+}
+
+// NewMockAlphaBackendBuckets returns a new mock for BackendBuckets.
+func NewMockAlphaBackendBuckets(pr ProjectRouter, objs map[meta.Key]*MockBackendBucketsObj) *MockAlphaBackendBuckets {
+	mock := &MockAlphaBackendBuckets{
+		ProjectRouter: pr,
+
+		Objects:     objs,
+		GetError:    map[meta.Key]error{},
+		InsertError: map[meta.Key]error{},
+		DeleteError: map[meta.Key]error{},
+	}
+	return mock
+}
+
+// MockAlphaBackendBuckets is the mock for BackendBuckets.
+type MockAlphaBackendBuckets struct {
+	Lock sync.Mutex
+
+	ProjectRouter ProjectRouter
+
+	// Objects maintained by the mock.
+	Objects map[meta.Key]*MockBackendBucketsObj
+
+	// If an entry exists for the given key and operation, then the error
+	// will be returned instead of the operation.
+	GetError    map[meta.Key]error
+	ListError   *error
+	InsertError map[meta.Key]error
+	DeleteError map[meta.Key]error
+
+	// xxxHook allow you to intercept the standard processing of the mock in
+	// order to add your own logic. Return (true, _, _) to prevent the normal
+	// execution flow of the mock. Return (false, nil, nil) to continue with
+	// normal mock behavior/ after the hook function executes.
+	GetHook    func(ctx context.Context, key *meta.Key, m *MockAlphaBackendBuckets) (bool, *alpha.BackendBucket, error)
+	ListHook   func(ctx context.Context, fl *filter.F, m *MockAlphaBackendBuckets) (bool, []*alpha.BackendBucket, error)
+	InsertHook func(ctx context.Context, key *meta.Key, obj *alpha.BackendBucket, m *MockAlphaBackendBuckets) (bool, error)
+	DeleteHook func(ctx context.Context, key *meta.Key, m *MockAlphaBackendBuckets) (bool, error)
+	PatchHook  func(context.Context, *meta.Key, *alpha.BackendBucket, *MockAlphaBackendBuckets) error
+	UpdateHook func(context.Context, *meta.Key, *alpha.BackendBucket, *MockAlphaBackendBuckets) error
+
+	// X is extra state that can be used as part of the mock. Generated code
+	// will not use this field.
+	X interface{}
+}
+
+// Get returns the object from the mock.
+func (m *MockAlphaBackendBuckets) Get(ctx context.Context, key *meta.Key) (*alpha.BackendBucket, error) {
+	if m.GetHook != nil {
+		if intercept, obj, err := m.GetHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockAlphaBackendBuckets.Get(%v, %s) = %+v, %v", ctx, key, obj, err)
+			return obj, err
+		}
+	}
+	if !key.Valid() {
+		return nil, fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.GetError[*key]; ok {
+		glog.V(5).Infof("MockAlphaBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+		return nil, err
+	}
+	if obj, ok := m.Objects[*key]; ok {
+		typedObj := obj.ToAlpha()
+		glog.V(5).Infof("MockAlphaBackendBuckets.Get(%v, %s) = %+v, nil", ctx, key, typedObj)
+		return typedObj, nil
+	}
+
+	err := &googleapi.Error{
+		Code:    http.StatusNotFound,
+		Message: fmt.Sprintf("MockAlphaBackendBuckets %v not found", key),
+	}
+	glog.V(5).Infof("MockAlphaBackendBuckets.Get(%v, %s) = nil, %v", ctx, key, err)
+	return nil, err
+}
+
+// List all of the objects in the mock.
+func (m *MockAlphaBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*alpha.BackendBucket, error) {
+	if m.ListHook != nil {
+		if intercept, objs, err := m.ListHook(ctx, fl, m); intercept {
+			glog.V(5).Infof("MockAlphaBackendBuckets.List(%v, %v) = [%v items], %v", ctx, fl, len(objs), err)
+			return objs, err
+		}
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if m.ListError != nil {
+		err := *m.ListError
+		glog.V(5).Infof("MockAlphaBackendBuckets.List(%v, %v) = nil, %v", ctx, fl, err)
+
+		return nil, *m.ListError
+	}
+
+	var objs []*alpha.BackendBucket
+	for _, obj := range m.Objects {
+		if !fl.Match(obj.ToAlpha()) {
+			continue
+		}
+		objs = append(objs, obj.ToAlpha())
+	}
+
+	glog.V(5).Infof("MockAlphaBackendBuckets.List(%v, %v) = [%v items], nil", ctx, fl, len(objs))
+	return objs, nil
+}
+
+// Insert is a mock for inserting/creating a new object.
+func (m *MockAlphaBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *alpha.BackendBucket) error {
+	if m.InsertHook != nil {
+		if intercept, err := m.InsertHook(ctx, key, obj, m); intercept {
+			glog.V(5).Infof("MockAlphaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.InsertError[*key]; ok {
+		glog.V(5).Infof("MockAlphaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; ok {
+		err := &googleapi.Error{
+			Code:    http.StatusConflict,
+			Message: fmt.Sprintf("MockAlphaBackendBuckets %v exists", key),
+		}
+		glog.V(5).Infof("MockAlphaBackendBuckets.Insert(%v, %v, %+v) = %v", ctx, key, obj, err)
+		return err
+	}
+
+	obj.Name = key.Name
+	projectID := m.ProjectRouter.ProjectID(ctx, "alpha", "backendBuckets")
+	obj.SelfLink = SelfLink(meta.VersionAlpha, projectID, "backendBuckets", key)
+
+	m.Objects[*key] = &MockBackendBucketsObj{obj}
+	glog.V(5).Infof("MockAlphaBackendBuckets.Insert(%v, %v, %+v) = nil", ctx, key, obj)
+	return nil
+}
+
+// Delete is a mock for deleting the object.
+func (m *MockAlphaBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	if m.DeleteHook != nil {
+		if intercept, err := m.DeleteHook(ctx, key, m); intercept {
+			glog.V(5).Infof("MockAlphaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+			return err
+		}
+	}
+	if !key.Valid() {
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+
+	m.Lock.Lock()
+	defer m.Lock.Unlock()
+
+	if err, ok := m.DeleteError[*key]; ok {
+		glog.V(5).Infof("MockAlphaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+	if _, ok := m.Objects[*key]; !ok {
+		err := &googleapi.Error{
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("MockAlphaBackendBuckets %v not found", key),
+		}
+		glog.V(5).Infof("MockAlphaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	delete(m.Objects, *key)
+	glog.V(5).Infof("MockAlphaBackendBuckets.Delete(%v, %v) = nil", ctx, key)
+	return nil
+}
+
+// Obj wraps the object for use in the mock.
+func (m *MockAlphaBackendBuckets) Obj(o *alpha.BackendBucket) *MockBackendBucketsObj {
+	return &MockBackendBucketsObj{o}
+}
+
+// Patch is a mock for the corresponding method.
+func (m *MockAlphaBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *alpha.BackendBucket) error {
+	if m.PatchHook != nil {
+		return m.PatchHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// Update is a mock for the corresponding method.
+func (m *MockAlphaBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *alpha.BackendBucket) error {
+	if m.UpdateHook != nil {
+		return m.UpdateHook(ctx, key, arg0, m)
+	}
+	return nil
+}
+
+// GCEAlphaBackendBuckets is a simplifying adapter for the GCE BackendBuckets.
+type GCEAlphaBackendBuckets struct {
+	s *Service
+}
+
+// Get the BackendBucket named by key.
+func (g *GCEAlphaBackendBuckets) Get(ctx context.Context, key *meta.Key) (*alpha.BackendBucket, error) {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Get(%v, %v): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEAlphaBackendBuckets.Get(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return nil, fmt.Errorf("invalid GCE key (%#v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Get",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Get(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Get(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return nil, err
+	}
+	call := g.s.Alpha.BackendBuckets.Get(projectID, key.Name)
+	call.Context(ctx)
+	v, err := call.Do()
+	glog.V(4).Infof("GCEAlphaBackendBuckets.Get(%v, %v) = %+v, %v", ctx, key, v, err)
+	return v, err
+}
+
+// List all BackendBucket objects.
+func (g *GCEAlphaBackendBuckets) List(ctx context.Context, fl *filter.F) ([]*alpha.BackendBucket, error) {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.List(%v, %v) called", ctx, fl)
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "List",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		return nil, err
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.List(%v, %v): projectID = %v, rk = %+v", ctx, fl, projectID, rk)
+	call := g.s.Alpha.BackendBuckets.List(projectID)
+	if fl != filter.None {
+		call.Filter(fl.String())
+	}
+	var all []*alpha.BackendBucket
+	f := func(l *alpha.BackendBucketList) error {
+		glog.V(5).Infof("GCEAlphaBackendBuckets.List(%v, ..., %v): page %+v", ctx, fl, l)
+		all = append(all, l.Items...)
+		return nil
+	}
+	if err := call.Pages(ctx, f); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, nil, err)
+		return nil, err
+	}
+
+	if glog.V(4) {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.List(%v, ..., %v) = [%v items], %v", ctx, fl, len(all), nil)
+	} else if glog.V(5) {
+		var asStr []string
+		for _, o := range all {
+			asStr = append(asStr, fmt.Sprintf("%+v", o))
+		}
+		glog.V(5).Infof("GCEAlphaBackendBuckets.List(%v, ..., %v) = %v, %v", ctx, fl, asStr, nil)
+	}
+
+	return all, nil
+}
+
+// Insert BackendBucket with key of value obj.
+func (g *GCEAlphaBackendBuckets) Insert(ctx context.Context, key *meta.Key, obj *alpha.BackendBucket) error {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, %+v): called", ctx, key, obj)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Insert",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	obj.Name = key.Name
+	call := g.s.Alpha.BackendBuckets.Insert(projectID, obj)
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEAlphaBackendBuckets.Insert(%v, %v, %+v) = %+v", ctx, key, obj, err)
+	return err
+}
+
+// Delete the BackendBucket referenced by key.
+func (g *GCEAlphaBackendBuckets) Delete(ctx context.Context, key *meta.Key) error {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Delete(%v, %v): called", ctx, key)
+	if !key.Valid() {
+		glog.V(2).Infof("GCEAlphaBackendBuckets.Delete(%v, %v): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Delete",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Delete(%v, %v): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Delete(%v, %v): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Alpha.BackendBuckets.Delete(projectID, key.Name)
+
+	call.Context(ctx)
+
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+		return err
+	}
+
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEAlphaBackendBuckets.Delete(%v, %v) = %v", ctx, key, err)
+	return err
+}
+
+// Patch is a method on GCEAlphaBackendBuckets.
+func (g *GCEAlphaBackendBuckets) Patch(ctx context.Context, key *meta.Key, arg0 *alpha.BackendBucket) error {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Patch",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Alpha.BackendBuckets.Patch(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEAlphaBackendBuckets.Patch(%v, %v, ...) = %+v", ctx, key, err)
+	return err
+}
+
+// Update is a method on GCEAlphaBackendBuckets.
+func (g *GCEAlphaBackendBuckets) Update(ctx context.Context, key *meta.Key, arg0 *alpha.BackendBucket) error {
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...): called", ctx, key)
+
+	if !key.Valid() {
+		glog.V(2).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...): key is invalid (%#v)", ctx, key, key)
+		return fmt.Errorf("invalid GCE key (%+v)", key)
+	}
+	projectID := g.s.ProjectRouter.ProjectID(ctx, "alpha", "BackendBuckets")
+	rk := &RateLimitKey{
+		ProjectID: projectID,
+		Operation: "Update",
+		Version:   meta.Version("alpha"),
+		Service:   "BackendBuckets",
+	}
+	glog.V(5).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...): projectID = %v, rk = %+v", ctx, key, projectID, rk)
+
+	if err := g.s.RateLimiter.Accept(ctx, rk); err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...): RateLimiter error: %v", ctx, key, err)
+		return err
+	}
+	call := g.s.Alpha.BackendBuckets.Update(projectID, key.Name, arg0)
+	call.Context(ctx)
+	op, err := call.Do()
+	if err != nil {
+		glog.V(4).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
+		return err
+	}
+	err = g.s.WaitForCompletion(ctx, op)
+	glog.V(4).Infof("GCEAlphaBackendBuckets.Update(%v, %v, ...) = %+v", ctx, key, err)
 	return err
 }
 
@@ -14982,6 +16328,12 @@ func (g *GCEZones) List(ctx context.Context, fl *filter.F) ([]*ga.Zone, error) {
 func NewAddressesResourceID(project, region, name string) *ResourceID {
 	key := meta.RegionalKey(name, region)
 	return &ResourceID{project, "addresses", key}
+}
+
+// NewBackendBucketsResourceID creates a ResourceID for the BackendBuckets resource.
+func NewBackendBucketsResourceID(project, name string) *ResourceID {
+	key := meta.GlobalKey(name)
+	return &ResourceID{project, "backendBuckets", key}
 }
 
 // NewBackendServicesResourceID creates a ResourceID for the BackendServices resource.

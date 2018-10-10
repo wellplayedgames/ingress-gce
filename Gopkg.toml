@@ -40,7 +40,8 @@ ignored = ["k8s.io/kubernetes/pkg/api"]
 
 [[constraint]]
   name = "k8s.io/kubernetes"
-  branch = "master"
+  branch = "ingress-gce"
+  source = "github.com/wellplayedgames/kubernetes"
 
 # This needs to be an override as it is a non-direct dependency and will not be
 # considered by `dep` as a constraint.

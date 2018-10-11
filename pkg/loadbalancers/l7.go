@@ -259,6 +259,7 @@ func GetLBAnnotations(l7 *L7, existing map[string]string, backendSyncer backends
 	if err == nil {
 		jsonBackendState = string(b)
 	}
+
 	certs := []string{}
 	for _, cert := range l7.sslCerts {
 		certs = append(certs, cert.Name)

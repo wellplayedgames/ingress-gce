@@ -321,7 +321,7 @@ func (lbc *LoadBalancerController) SyncBackends(state interface{}) error {
 		if sp.NEGEnabled {
 			// Link backend to NEG's if the backend has NEG enabled.
 			linkErr = lbc.negLinker.Link(sp, groupKeys)
-		} else {
+		} else if !sp.IsBucket() {
 			// Otherwise, link backend to IG's.
 			linkErr = lbc.igLinker.Link(sp, groupKeys)
 		}

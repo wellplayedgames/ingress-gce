@@ -93,6 +93,7 @@ func (b *Backends) Create(sp utils.ServicePort, hcLink string) (*composite.Backe
 		Protocol:     string(sp.Protocol),
 		Port:         namedPort.Port,
 		PortName:     namedPort.Name,
+		BucketName:   sp.Bucket,
 		HealthChecks: []string{hcLink},
 	}
 	ensureDescription(be, &sp)
@@ -160,7 +161,17 @@ func (b *Backends) Delete(name string) (err error) {
 // Health implements Pool.
 func (b *Backends) Health(name string) string {
 	be, err := b.Get(name, meta.VersionGA)
-	if err != nil || len(be.Backends) == 0 {
+	if err != nil {
+		return "Unknown"
+	}
+
+	// Buckets are always healthy.
+	if be.BucketName != "" {
+		return "OK"
+	}
+
+	// The health is unknown if there are know attached backends.
+	if len(be.Backends) == 0 {
 		return "Unknown"
 	}
 

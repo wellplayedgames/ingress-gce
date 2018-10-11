@@ -58,6 +58,11 @@ const (
 	// - '{"default":"config-default","ports":{"my-https-port":"config-https"}}'
 	BackendConfigKey = "beta.cloud.google.com/backend-config"
 
+	// BucketKey represents the backend Google Cloud Storage bucket to use
+	// to serve content. If this annotation is set, no traffic will reach
+	// pods assigned to this service.
+	BucketKey = "ingress.wellplayed.games/backend-bucket"
+
 	// ProtocolHTTP protocol for a service
 	ProtocolHTTP AppProtocol = "HTTP"
 	// ProtocolHTTPS protocol for a service
@@ -198,4 +203,12 @@ func (svc *Service) GetBackendConfigs() (*BackendConfigs, error) {
 		return nil, ErrBackendConfigNoneFound
 	}
 	return &configs, nil
+}
+
+func (svc *Service) Bucket() string {
+	val, ok := svc.v[BucketKey]
+	if !ok {
+		return ""
+	}
+	return val
 }

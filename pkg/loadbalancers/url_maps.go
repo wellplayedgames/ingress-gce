@@ -167,6 +167,19 @@ func mapsEqual(a, b *compute.UrlMap) bool {
 	return true
 }
 
+func backendPath(namer *utils.Namer, sp *utils.ServicePort) string {
+	var resource *cloud.ResourceID
+	beName := sp.BackendName(namer)
+
+	if sp.IsBucket() {
+		resource = cloud.NewBackendBucketsResourceID("", beName)
+	} else {
+		resource = cloud.NewBackendServicesResourceID("", beName)
+	}
+
+	return resource.ResourcePath()
+}
+
 // toComputeURLMap translates the given hostname: endpoint->port mapping into a gce url map.
 //
 // HostRule: Conceptually contains all PathRules for a given host.
@@ -209,10 +222,9 @@ func mapsEqual(a, b *compute.UrlMap) bool {
 // more frequently than service deletion) we just need to lookup the 1
 // pathmatcher of the host.
 func toComputeURLMap(lbName string, g *utils.GCEURLMap, namer *utils.Namer) *compute.UrlMap {
-	defaultBackendName := g.DefaultBackend.BackendName(namer)
 	m := &compute.UrlMap{
 		Name:           namer.UrlMap(lbName),
-		DefaultService: cloud.NewBackendServicesResourceID("", defaultBackendName).ResourcePath(),
+		DefaultService: backendPath(namer, g.DefaultBackend),
 	}
 
 	for _, hostRule := range g.HostRules {
@@ -233,8 +245,7 @@ func toComputeURLMap(lbName string, g *utils.GCEURLMap, namer *utils.Namer) *com
 
 		// GCE ensures that matched rule with longest prefix wins.
 		for _, rule := range hostRule.Paths {
-			beName := rule.Backend.BackendName(namer)
-			beLink := cloud.NewBackendServicesResourceID("", beName).ResourcePath()
+			beLink := backendPath(namer, &rule.Backend)
 			pathMatcher.PathRules = append(pathMatcher.PathRules, &compute.PathRule{
 				Paths:   []string{rule.Path},
 				Service: beLink,

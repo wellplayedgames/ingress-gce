@@ -107,6 +107,7 @@ func (s *backendSyncer) ensureBackendService(sp utils.ServicePort) error {
 	}
 
 	needUpdate := ensureProtocol(be, sp)
+	needUpdate = ensureBucket(be, sp) || needUpdate
 	needUpdate = ensureHealthCheckLink(be, hcLink) || needUpdate
 	needUpdate = ensureDescription(be, &sp) || needUpdate
 	if s.backendConfigEnabled && sp.BackendConfig != nil {
@@ -147,7 +148,7 @@ func (s *backendSyncer) GC(svcPorts []utils.ServicePort) error {
 		if err := s.backendPool.Delete(name); err != nil && !utils.IsHTTPErrorCode(err, http.StatusNotFound) {
 			return err
 		}
-		if err := s.healthChecker.Delete(name); err != nil {
+		if err := s.healthChecker.Delete(name); err != nil && !utils.IsHTTPErrorCode(err, http.StatusNotFound) {
 			return err
 		}
 	}
@@ -171,6 +172,11 @@ func (s *backendSyncer) ensureHealthCheck(sp utils.ServicePort, hasLegacyHC bool
 	if hasLegacyHC {
 		glog.Errorf("Backend %+v has legacy health check", sp.ID)
 	}
+
+	if sp.IsBucket() {
+		return "", nil
+	}
+
 	hc := s.healthChecker.New(sp)
 	if s.prober != nil {
 		probe, err := s.prober.GetProbe(sp)
@@ -200,6 +206,15 @@ func ensureProtocol(be *composite.BackendService, p utils.ServicePort) (needsUpd
 		return false
 	}
 	be.Protocol = string(p.Protocol)
+	return true
+}
+
+// ensureBucket updates the BackendService Bucket with the expected value
+func ensureBucket(be *composite.BackendService, p utils.ServicePort) (needsUpdate bool) {
+	if be.BucketName == p.Bucket {
+		return false
+	}
+	be.BucketName = p.Bucket
 	return true
 }
 

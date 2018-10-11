@@ -94,6 +94,7 @@ func (t *Translator) getServicePort(id utils.ServicePortID) (*utils.ServicePort,
 		NodePort:   int64(port.NodePort),
 		Port:       int32(port.Port),
 		TargetPort: port.TargetPort.String(),
+		Bucket:     annotations.FromService(svc).Bucket(),
 		NEGEnabled: t.ctx.NEGEnabled && negEnabled,
 	}
 

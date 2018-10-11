@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"fmt"
+
 	"k8s.io/ingress-gce/pkg/annotations"
 	backendconfigv1beta1 "k8s.io/ingress-gce/pkg/apis/backendconfig/v1beta1"
 )
@@ -46,8 +47,14 @@ type ServicePort struct {
 	Port          int32
 	Protocol      annotations.AppProtocol
 	TargetPort    string
+	Bucket        string
 	NEGEnabled    bool
 	BackendConfig *backendconfigv1beta1.BackendConfig
+}
+
+// IsBucket returns true if this ServicePort targets a bucket (rather than a service).
+func (sp ServicePort) IsBucket() bool {
+	return sp.Bucket != ""
 }
 
 // GetDescription returns a Description for this ServicePort.
@@ -60,6 +67,10 @@ func (sp ServicePort) GetDescription() Description {
 
 // BackendName returns the name of the backend which would be used for this ServicePort.
 func (sp ServicePort) BackendName(namer *Namer) string {
+	if sp.IsBucket() {
+		return namer.BackendBucket(sp.Bucket)
+	}
+
 	if !sp.NEGEnabled {
 		return namer.IGBackend(sp.NodePort)
 	}

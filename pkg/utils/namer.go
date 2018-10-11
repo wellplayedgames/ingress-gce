@@ -44,8 +44,9 @@ const (
 	urlMapPrefix              = "um"
 
 	// This allows sharing of backends across loadbalancers.
-	backendPrefix = "be"
-	backendRegex  = "be-([0-9]+).*"
+	backendPrefix       = "be"
+	backendRegex        = "be-([0-9]+).*"
+	backendBucketPrefix = "bb"
 
 	// Prefix used for instance groups involved in L7 balancing.
 	igPrefix = "ig"
@@ -251,6 +252,11 @@ func (n *Namer) NameBelongsToCluster(name string) bool {
 // IGBackend constructs the name for a backend service targeting instance groups.
 func (n *Namer) IGBackend(port int64) string {
 	return n.decorateName(fmt.Sprintf("%v-%v-%d", n.prefix, backendPrefix, port))
+}
+
+// BackendBucket constructs the name for a backend bucket.
+func (n *Namer) BackendBucket(bucket string) string {
+	return n.decorateName(fmt.Sprintf("%v-%v-%s", n.prefix, backendBucketPrefix, bucket))
 }
 
 // IGBackendPort retrieves the port from the given backend name.

@@ -19,6 +19,7 @@ package composite
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/golang/glog"
 
@@ -26,6 +27,7 @@ import (
 	computebeta "google.golang.org/api/compute/v0.beta"
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
+	"k8s.io/ingress-gce/pkg/utils"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud/meta"
 )
@@ -33,54 +35,106 @@ import (
 // TODO(rramkumar): All code in this file should ideally be generated.
 
 func CreateBackendService(be *BackendService, cloud *gce.GCECloud) error {
-	switch be.Version {
-	case meta.VersionAlpha:
-		alpha, err := be.toAlpha()
-		if err != nil {
-			return err
+	if be.BucketName != "" {
+		switch be.Version {
+		case meta.VersionAlpha:
+			alpha, err := be.toAlphaBucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating alpha backend bucket %v", alpha.Name)
+			return cloud.CreateAlphaBackendBucket(alpha)
+		case meta.VersionBeta:
+			beta, err := be.toBetaBucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating beta backend bucket %v", beta.Name)
+			return cloud.CreateBetaBackendBucket(beta)
+		default:
+			ga, err := be.toGABucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating ga backend bucket %v", ga.Name)
+			return cloud.CreateBackendBucket(ga)
 		}
-		glog.V(3).Infof("Creating alpha backend service %v", alpha.Name)
-		return cloud.CreateAlphaGlobalBackendService(alpha)
-	case meta.VersionBeta:
-		beta, err := be.toBeta()
-		if err != nil {
-			return err
+	} else {
+		switch be.Version {
+		case meta.VersionAlpha:
+			alpha, err := be.toAlpha()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating alpha backend service %v", alpha.Name)
+			return cloud.CreateAlphaGlobalBackendService(alpha)
+		case meta.VersionBeta:
+			beta, err := be.toBeta()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating beta backend service %v", beta.Name)
+			return cloud.CreateBetaGlobalBackendService(beta)
+		default:
+			ga, err := be.toGA()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Creating ga backend service %v", ga.Name)
+			return cloud.CreateGlobalBackendService(ga)
 		}
-		glog.V(3).Infof("Creating beta backend service %v", beta.Name)
-		return cloud.CreateBetaGlobalBackendService(beta)
-	default:
-		ga, err := be.toGA()
-		if err != nil {
-			return err
-		}
-		glog.V(3).Infof("Creating ga backend service %v", ga.Name)
-		return cloud.CreateGlobalBackendService(ga)
 	}
 }
 
 func UpdateBackendService(be *BackendService, cloud *gce.GCECloud) error {
-	switch be.Version {
-	case meta.VersionAlpha:
-		alpha, err := be.toAlpha()
-		if err != nil {
-			return err
+	if be.BucketName != "" {
+		switch be.Version {
+		case meta.VersionAlpha:
+			alpha, err := be.toAlphaBucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating alpha backend bucket %v", alpha.Name)
+			return cloud.UpdateAlphaBackendBucket(alpha)
+		case meta.VersionBeta:
+			beta, err := be.toBetaBucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating beta backend bucket %v", beta.Name)
+			return cloud.UpdateBetaBackendBucket(beta)
+		default:
+			ga, err := be.toGABucket()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating ga backend bucket %v", ga.Name)
+			return cloud.UpdateBackendBucket(ga)
 		}
-		glog.V(3).Infof("Updating alpha backend service %v", alpha.Name)
-		return cloud.UpdateAlphaGlobalBackendService(alpha)
-	case meta.VersionBeta:
-		beta, err := be.toBeta()
-		if err != nil {
-			return err
+	} else {
+		switch be.Version {
+		case meta.VersionAlpha:
+			alpha, err := be.toAlpha()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating alpha backend service %v", alpha.Name)
+			return cloud.UpdateAlphaGlobalBackendService(alpha)
+		case meta.VersionBeta:
+			beta, err := be.toBeta()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating beta backend service %v", beta.Name)
+			return cloud.UpdateBetaGlobalBackendService(beta)
+		default:
+			ga, err := be.toGA()
+			if err != nil {
+				return err
+			}
+			glog.V(3).Infof("Updating ga backend service %v", ga.Name)
+			return cloud.UpdateGlobalBackendService(ga)
 		}
-		glog.V(3).Infof("Updating beta backend service %v", beta.Name)
-		return cloud.UpdateBetaGlobalBackendService(beta)
-	default:
-		ga, err := be.toGA()
-		if err != nil {
-			return err
-		}
-		glog.V(3).Infof("Updating ga backend service %v", ga.Name)
-		return cloud.UpdateGlobalBackendService(ga)
 	}
 }
 
@@ -95,6 +149,18 @@ func GetBackendService(name string, version meta.Version, cloud *gce.GCECloud) (
 	default:
 		gceObj, err = cloud.GetGlobalBackendService(name)
 	}
+
+	if utils.IsHTTPErrorCode(err, http.StatusNotFound) {
+		switch version {
+		case meta.VersionAlpha:
+			gceObj, err = cloud.GetAlphaBackendBucket(name)
+		case meta.VersionBeta:
+			gceObj, err = cloud.GetBetaBackendBucket(name)
+		default:
+			gceObj, err = cloud.GetBackendBucket(name)
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +219,9 @@ type BackendService struct {
 	googleapi.ServerResponse `json:"-"`
 	ForceSendFields          []string `json:"-"`
 	NullFields               []string `json:"-"`
+
+	// Fields used for backend buckets
+	BucketName string `json:"bucketName,omitempty"`
 }
 
 type Backend struct {
@@ -299,6 +368,51 @@ func (be *BackendService) toGA() (*compute.BackendService, error) {
 	}
 	if ga.Iap != nil {
 		ga.Iap.ForceSendFields = []string{"Enabled", "Oauth2ClientId", "Oauth2ClientSecret"}
+	}
+	return ga, nil
+}
+
+// toAlpha converts our composite type into an alpha type.
+// This alpha type can be used in GCE API calls.
+func (be *BackendService) toAlphaBucket() (*computealpha.BackendBucket, error) {
+	bytes, err := json.Marshal(be)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling BackendBucket to JSON: %v", err)
+	}
+	alpha := &computealpha.BackendBucket{}
+	err = json.Unmarshal(bytes, alpha)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling BackendBucket JSON to compute alpha type: %v", err)
+	}
+	return alpha, nil
+}
+
+// toBeta converts our composite type into an beta type.
+// This beta type can be used in GCE API calls.
+func (be *BackendService) toBetaBucket() (*computebeta.BackendBucket, error) {
+	bytes, err := json.Marshal(be)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling BackendBucket to JSON: %v", err)
+	}
+	beta := &computebeta.BackendBucket{}
+	err = json.Unmarshal(bytes, beta)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling BackendBucket JSON to compute beta type: %v", err)
+	}
+	return beta, nil
+}
+
+// toGA converts our composite type into a GA type.
+// This GA type can be used in GCE API calls.
+func (be *BackendService) toGABucket() (*compute.BackendBucket, error) {
+	bytes, err := json.Marshal(be)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling BackendBucket to JSON: %v", err)
+	}
+	ga := &compute.BackendBucket{}
+	err = json.Unmarshal(bytes, ga)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling BackendBucket JSON to compute GA type: %v", err)
 	}
 	return ga, nil
 }

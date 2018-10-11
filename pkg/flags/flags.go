@@ -54,7 +54,7 @@ const (
 	DefaultLockObjectNamespace string = "kube-system"
 
 	// DefaultLockObjectName is the object name of the lock object.
-	DefaultLockObjectName = "ingress-gce-lock"
+	DefaultLockObjectName = "ingress-gce-lock-wpg"
 )
 
 var (
@@ -62,6 +62,7 @@ var (
 	F = struct {
 		APIServerHost             string
 		ClusterName               string
+		FirewallName              string
 		ConfigFilePath            string
 		DefaultSvcHealthCheckPath string
 		DefaultSvc                string
@@ -155,6 +156,9 @@ as instance groups. Use this flag if you'd like to continue using the same
 resources across a pod restart. Note that this does not need to  match the name
 of you Kubernetes cluster, it's just an arbitrary name used to tag/lookup cloud
 resources.`)
+
+	flag.StringVar(&F.FirewallName, "fw-name", "",
+		`Optional, override firewall name.`)
 	flag.StringVar(&F.ConfigFilePath, "config-file-path", "",
 		`Path to a file containing the gce config. If left unspecified this
 controller only works with default zones.`)

@@ -52,6 +52,11 @@ func NewNamer(kubeClient kubernetes.Interface, clusterName, fwName string) (*uti
 	}
 
 	namer := utils.NewNamer(name, fw_name)
+
+	if clusterName != "" || fwName != "" {
+		return namer, nil
+	}
+
 	uidVault := storage.NewConfigMapVault(kubeClient, metav1.NamespaceSystem, uidConfigMapName)
 
 	// Start a goroutine to poll the cluster UID config map.  We don't

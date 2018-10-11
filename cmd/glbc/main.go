@@ -101,9 +101,9 @@ func main() {
 		}
 	}
 
-	namer, err := app.NewNamer(kubeClient, flags.F.ClusterName, firewalls.DefaultFirewallName)
+	namer, err := app.NewNamer(kubeClient, flags.F.ClusterName, flags.F.FirewallName)
 	if err != nil {
-		glog.Fatalf("app.NewNamer(ctx.KubeClient, %q, %q) = %v", flags.F.ClusterName, firewalls.DefaultFirewallName, err)
+		glog.Fatalf("app.NewNamer(ctx.KubeClient, %q, %q) = %v", flags.F.ClusterName, flags.F.FirewallName, err)
 	}
 	if namer.UID() != "" {
 		glog.V(0).Infof("Cluster name: %+v", namer.UID())
